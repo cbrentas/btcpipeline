@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Bitcoin Market Dashboard</title>
+    <script src="/dashboard/js/chart.js"></script>
+
+    <style>
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+        padding: 40px;
+        margin: 0;
+      }
+
+      h1 {
+        margin-bottom: 6px;
+      }
+
+      .subtitle {
+        color: #94a3b8;
+        margin-bottom: 30px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 24px;
+      }
+
+      .card {
+        background: #1e293b;
+        padding: 22px;
+        border-radius: 14px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+      }
+
+      .label {
+        color: #94a3b8;
+        font-size: 13px;
+      }
+
+      .value {
+        font-size: 32px;
+        font-weight: 600;
+        margin-top: 6px;
+      }
+
+      .green {
+        color: #22c55e;
+      }
+      .red {
+        color: #ef4444;
+      }
+
+      .desc {
+        font-size: 13px;
+        color: #94a3b8;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Bitcoin Market Overview (something happened to lyp)</h1>
+    <div class="subtitle">
+      Live price, statistical trend, and simple ML forecast updated every 30
+      seconds.
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="label">BTC Price</div>
+        <div id="price" class="value">$—</div>
+        <div class="desc">Current market spot price.</div>
+      </div>
+
+      <div class="card">
+        <div class="label">Trend vs SMA</div>
+        <div id="trend" class="value">—</div>
+        <div id="trendText" class="desc"></div>
+      </div>
+
+      <div class="card">
+        <div class="label">Model Prediction</div>
+        <div id="prediction" class="value">—</div>
+        <div class="desc">
+          Linear regression estimate of the next price point.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="label">Volatility</div>
+        <div id="volatility" class="value">—</div>
+        <div class="desc">Short-term price variability.</div>
+      </div>
+
+      <div class="card" style="grid-column: 1/-1">
+        <canvas id="history" style="max-height: 220px"></canvas>
+      </div>
+
+      <button
+        onclick="
+          alert('Current BTC: ' + document.getElementById('price').innerText)
+        "
+      >
+        Show Current Price
+      </button>
+    </div>
+
+    <script>
+      let chart = null;
+
+      async function load() {
+        const res = await fetch("/metrics");
+        const d = await res.json();
+
+        document.getElementById("price").innerText =
+          "$" + d.latest_price.toLocaleString();
+
+        if (d.sma) {
+          const diff = ((d.latest_price - d.sma) / d.sma) * 100;
+          document.getElementById("trend").innerText = diff.toFixed(2) + "%";
+        }
+
+        document.getElementById("prediction").innerText = d.prediction
+          ? "$" + d.prediction.toFixed(2)
+          : "Not enough data";
+
+        document.getElementById("volatility").innerText = d.volatility
+          ? d.volatility.toFixed(2)
+          : "--";
+
+        const labels = d.history.map((x) => x.t.slice(11, 16));
+        const prices = d.history.map((x) => x.p);
+
+        if (chart) chart.destroy();
+
+        chart = new Chart(document.getElementById("history"), {
+          type: "line",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "BTC",
+                data: prices,
+                borderColor: "#22c55e",
+                tension: 0.2,
+              },
+            ],
+          },
+          options: {
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { color: "#94a3b8" } },
+              y: { ticks: { color: "#94a3b8" } },
+            },
+          },
+        });
+      }
+
+      load();
+      setInterval(load, 30000);
+    </script>
+  </body>
+</html>
