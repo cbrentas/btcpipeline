@@ -71,21 +71,45 @@
       seconds.
     </div>
 
+    <div class="card" style="margin-bottom: 24px">
+      <div class="label">What this page shows</div>
+      <div
+        class="desc"
+        style="margin-top: 8px; font-size: 14px; line-height: 1.5"
+      >
+        This dashboard collects the Bitcoin price every 5 minutes, stores it in
+        a database, and displays live statistics. It also runs a simple
+        prediction model that tries to estimate the next 5-minute price. The
+        “Model” section below tracks whether the model is actually improving
+        over time by comparing it against a naive baseline:
+        <b>“next price = current price”</b>.
+      </div>
+    </div>
+
     <div class="grid">
       <div class="card">
-        <div class="label">BTC Price</div>
+        <div class="label">
+          BTC Price, latest BTC price pulled from the data source (stored in
+          DB).
+        </div>
         <div id="price" class="value">$—</div>
         <div class="desc">Current market spot price.</div>
       </div>
 
       <div class="card">
-        <div class="label">Trend vs SMA</div>
+        <div class="label">
+          Trend vs SMA, how far price is above/below the Simple Moving Average
+          (SMA). Positive = above trend
+        </div>
         <div id="trend" class="value">—</div>
         <div id="trendText" class="desc"></div>
       </div>
 
       <div class="card">
-        <div class="label">Model Prediction</div>
+        <div class="label">
+          Model Prediction, predicted next 5-minute price. This is experimental
+          and may not beat the baseline.
+        </div>
         <div id="prediction" class="value">—</div>
         <div class="desc">
           Linear regression estimate of the next price point.
@@ -93,7 +117,10 @@
       </div>
 
       <div class="card">
-        <div class="label">Volatility</div>
+        <div class="label">
+          Volatility, standard deviation of recent prices. Higher means more
+          choppy movement.
+        </div>
         <div id="volatility" class="value">—</div>
         <div class="desc">Short-term price variability.</div>
       </div>
@@ -110,6 +137,91 @@
         Show Current Price
       </button>
     </div>
+
+    <hr />
+
+    <section id="model-section" style="margin-top: 24px">
+      <h2>Model</h2>
+
+      <div style="display: flex; gap: 16px; flex-wrap: wrap">
+        <div
+          style="
+            flex: 1;
+            min-width: 260px;
+            border: 1px solid #ddd;
+            padding: 12px;
+            border-radius: 8px;
+          "
+        >
+          <h3 style="margin-top: 0">Info</h3>
+          <div id="model-info">Loading...</div>
+        </div>
+
+        <div
+          style="
+            flex: 1;
+            min-width: 260px;
+            border: 1px solid #ddd;
+            padding: 12px;
+            border-radius: 8px;
+          "
+        >
+          <h3 style="margin-top: 0">Performance</h3>
+          <div id="model-performance">Loading...</div>
+        </div>
+      </div>
+
+      <div
+        style="
+          margin-top: 16px;
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 16px;
+        "
+      >
+        <div style="border: 1px solid #ddd; padding: 12px; border-radius: 8px">
+          <h3 style="margin-top: 0">Actual vs Predicted (next-step)</h3>
+          <canvas id="chart-actual-pred" height="120"></canvas>
+        </div>
+
+        <div style="border: 1px solid #ddd; padding: 12px; border-radius: 8px">
+          <h3 style="margin-top: 0">Absolute Error</h3>
+          <canvas id="chart-error" height="120"></canvas>
+        </div>
+
+        <div style="border: 1px solid #ddd; padding: 12px; border-radius: 8px">
+          <h3 style="margin-top: 0">Rolling MAE (Model vs Baseline)</h3>
+          <canvas id="chart-rolling" height="120"></canvas>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top: 0">Last 5 Predictions (Model vs Reality)</h3>
+          <div class="desc">
+            These are the most recent completed predictions. The model predicts
+            the next 5-minute price, and we compare it with the real value once
+            it arrives.
+          </div>
+
+          <div style="overflow-x: auto; margin-top: 12px">
+            <table
+              style="width: 100%; border-collapse: collapse; font-size: 14px"
+            >
+              <thead>
+                <tr style="color: #94a3b8; text-align: left">
+                  <th style="padding: 6px">Time</th>
+                  <th style="padding: 6px">Predicted</th>
+                  <th style="padding: 6px">Actual</th>
+                  <th style="padding: 6px">Model Error</th>
+                  <th style="padding: 6px">Baseline Error</th>
+                  <th style="padding: 6px">Better?</th>
+                </tr>
+              </thead>
+              <tbody id="last5-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <script>
       let chart = null;
@@ -165,5 +277,6 @@
       load();
       setInterval(load, 30000);
     </script>
+    <script src="/dashboard/js/model.js"></script>
   </body>
 </html>
