@@ -32,17 +32,34 @@ flowchart TD
 
 ---
 
+## Prediction Lifecycle
+
+```mermaid
+flowchart LR
+    A[New Price Ingested] --> B[Score Oldest Pending Prediction]
+    B --> C[Update Rolling MAE + Baseline MAE]
+    C --> D[Maybe Retrain Model]
+    D --> E[Create Next Prediction]
+```
+
+Each prediction is created **before observing the true value**.  
+When the next price arrives, the system scores the previous prediction and compares it to a naive baseline ("next price = current price").
+
+This mirrors how production ML systems monitor real-world performance.
+
+---
+
 ## What Makes This Different?
 
-Instead of training offline and reporting accuracy:
+Instead of training offline and reporting static accuracy:
 
 1. The system makes a prediction
 2. Waits for the next real price
 3. Scores the prediction
-4. Compares it against a baseline ("next = current")
+4. Compares it against a baseline
 5. Tracks rolling MAE over time
 
-This mimics how production ML systems monitor real-world performance.
+The emphasis is on evaluation correctness and lifecycle design, not model complexity.
 
 ---
 
@@ -60,19 +77,18 @@ This mimics how production ML systems monitor real-world performance.
 
 ---
 
-## Why This Project Is Interesting
+## Deployment (VPS)
 
-Instead of measuring offline model accuracy, this system:
+This project is deployed on a VPS and exposed via a custom domain behind an Nginx reverse proxy.
 
-- Makes a prediction
-- Waits for the next real price
-- Scores the prediction
-- Compares it against a naive baseline
-- Tracks rolling performance over time
+- Nginx handles public HTTP traffic
+- Requests are proxied to Uvicorn/FastAPI
+- The FastAPI service runs continuously via systemd
+- Ingestion runs every 5 minutes (cron/systemd timer)
+- Training runs on a fixed cadence and persists model artifacts to disk
 
-This simulates how real-world ML monitoring systems operate in production.
-
-The focus is on evaluation correctness and system design, not prediction complexity.
+This setup mirrors a minimal real-world production environment:
+public entrypoint → reverse proxy → application server → database.
 
 ---
 
@@ -90,14 +106,14 @@ The focus is on evaluation correctness and system design, not prediction complex
 
 ## Quick Start (Local Development)
 
-### 1️)Clone Repository
+### 1) Clone Repository
 
 ```bash
 git clone https://github.com/cbrentas/btcpipeline.git
 cd btcpipeline
 ```
 
-### 2️)Create Virtual Environment
+### 2) Create Virtual Environment
 
 ```bash
 python -m venv venv
@@ -105,7 +121,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3️)Create `.env` File
+### 3) Create `.env` File
 
 Create a file named `.env` in the root directory and add:
 
@@ -118,7 +134,7 @@ DB_NAME=btcpipeline
 API_KEY=your_api_key
 ```
 
-### 4️)Run API Server
+### 4) Run API Server
 
 ```bash
 uvicorn app.main:app --reload
@@ -242,5 +258,3 @@ The architecture allows replacing the model with ARIMA, XGBoost, LSTM, or any ot
 - Prometheus metrics
 - Feature engineering (returns instead of raw price)
 - Model version comparison framework
-
----
