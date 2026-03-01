@@ -14,8 +14,7 @@ The focus is **correct ML evaluation in a production-style system**, not predict
 
 ## Live Demo
 
-Dashboard: https://cr7sp3r.com/dashboard  
-API Docs: https://cr7sp3r.com/docs
+Dashboard: https://header.cr7sp3r.com/dashboard
 
 ---
 
