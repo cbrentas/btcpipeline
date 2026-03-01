@@ -2,13 +2,20 @@
 
 A lightweight production-style pipeline that:
 
-- Fetches Bitcoin prices every 5 minutes  
-- Stores data in PostgreSQL  
-- Trains a rolling ML model  
-- Scores predictions against a naive baseline  
-- Serves metrics through a FastAPI dashboard  
+- Fetches Bitcoin prices every 5 minutes
+- Stores data in PostgreSQL
+- Trains a rolling ML model
+- Scores predictions against a naive baseline
+- Serves metrics through a FastAPI dashboard
 
 The focus is **correct ML evaluation in a production-style system**, not prediction hype.
+
+---
+
+## Live Demo
+
+Dashboard: https://cr7sp3r.com/dashboard  
+API Docs: https://cr7sp3r.com/docs
 
 ---
 
@@ -30,11 +37,11 @@ flowchart TD
 
 Instead of training offline and reporting accuracy:
 
-1. The system makes a prediction  
-2. Waits for the next real price  
-3. Scores the prediction  
-4. Compares it against a baseline ("next = current")  
-5. Tracks rolling MAE over time  
+1. The system makes a prediction
+2. Waits for the next real price
+3. Scores the prediction
+4. Compares it against a baseline ("next = current")
+5. Tracks rolling MAE over time
 
 This mimics how production ML systems monitor real-world performance.
 
@@ -42,15 +49,15 @@ This mimics how production ML systems monitor real-world performance.
 
 ## Engineering Highlights
 
-- Scheduled price ingestion (5-minute interval)  
-- PostgreSQL time-series storage  
-- Rolling window model training  
-- Prequential evaluation (predict → observe → score)  
-- Baseline comparison ("next price = current price")  
-- Rolling MAE tracking (50 / 200 windows)  
-- Model state persistence (singleton control table)  
-- Controlled retraining cadence (30-minute guard)  
-- VPS deployment with Nginx reverse proxy  
+- Scheduled price ingestion (5-minute interval)
+- PostgreSQL time-series storage
+- Rolling window model training
+- Prequential evaluation (predict → observe → score)
+- Baseline comparison ("next price = current price")
+- Rolling MAE tracking (50 / 200 windows)
+- Model state persistence (singleton control table)
+- Controlled retraining cadence (30-minute guard)
+- VPS deployment with Nginx reverse proxy
 
 ---
 
@@ -58,11 +65,11 @@ This mimics how production ML systems monitor real-world performance.
 
 Instead of measuring offline model accuracy, this system:
 
-- Makes a prediction  
-- Waits for the next real price  
-- Scores the prediction  
-- Compares it against a naive baseline  
-- Tracks rolling performance over time  
+- Makes a prediction
+- Waits for the next real price
+- Scores the prediction
+- Compares it against a naive baseline
+- Tracks rolling performance over time
 
 This simulates how real-world ML monitoring systems operate in production.
 
@@ -72,13 +79,13 @@ The focus is on evaluation correctness and system design, not prediction complex
 
 ## Tech Stack
 
-- Python 3.10  
-- FastAPI  
-- SQLAlchemy  
-- PostgreSQL  
-- scikit-learn (LinearRegression)  
-- Nginx (reverse proxy)  
-- VPS deployment  
+- Python 3.10
+- FastAPI
+- SQLAlchemy
+- PostgreSQL
+- scikit-learn (LinearRegression)
+- Nginx (reverse proxy)
+- VPS deployment
 
 ---
 
@@ -142,8 +149,8 @@ http://localhost:8000/dashboard
 
 The compose file spins up:
 
-- PostgreSQL  
-- FastAPI application  
+- PostgreSQL
+- FastAPI application
 
 When running with Docker, ensure your `.env` contains:
 
@@ -171,9 +178,9 @@ python scripts/train_online.py
 
 This will:
 
-- Score pending predictions  
-- Train rolling window model (if needed)  
-- Create a new next-step prediction  
+- Score pending predictions
+- Train rolling window model (if needed)
+- Create a new next-step prediction
 
 ---
 
@@ -181,11 +188,11 @@ This will:
 
 The system tracks:
 
-- Rolling MAE (50 window)  
-- Rolling MAE (200 window)  
-- Baseline MAE comparison  
-- Trend detection (improving / worsening)  
-- Whether the model beats the naive baseline  
+- Rolling MAE (50 window)
+- Rolling MAE (200 window)
+- Baseline MAE comparison
+- Trend detection (improving / worsening)
+- Whether the model beats the naive baseline
 
 API endpoints:
 
@@ -211,10 +218,10 @@ The objective is not to maximize predictive accuracy.
 
 The objective is to demonstrate:
 
-- Proper online evaluation flow  
-- Baseline comparison  
-- Model lifecycle management  
-- Stateful training coordination  
+- Proper online evaluation flow
+- Baseline comparison
+- Model lifecycle management
+- Stateful training coordination
 
 The architecture allows replacing the model with ARIMA, XGBoost, LSTM, or any other algorithm without modifying the evaluation framework.
 
@@ -222,19 +229,19 @@ The architecture allows replacing the model with ARIMA, XGBoost, LSTM, or any ot
 
 ## Security
 
-- API key protection  
-- Environment-based configuration  
-- Reverse proxy deployment via Nginx  
+- API key protection
+- Environment-based configuration
+- Reverse proxy deployment via Nginx
 
 ---
 
 ## Future Improvements
 
-- Structured logging  
-- Retry logic for external API failures  
-- Unit and integration tests  
-- Prometheus metrics  
-- Feature engineering (returns instead of raw price)  
-- Model version comparison framework  
+- Structured logging
+- Retry logic for external API failures
+- Unit and integration tests
+- Prometheus metrics
+- Feature engineering (returns instead of raw price)
+- Model version comparison framework
 
 ---
