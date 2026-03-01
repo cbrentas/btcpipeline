@@ -1,8 +1,6 @@
 venv/
 __pycache__/
 *.pyc
-*.log
 .env
-.idea/
-.vscode/
-node_modules/
+*.log
+models/*.joblib
